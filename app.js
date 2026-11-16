@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
 
 const FIREBASE_DB_URL = 'https://biodent-sistema-default-rtdb.firebaseio.com/biodent_cloud_v2.json';
 let isSyncingCloud = false;
+let isPushingCloud = false;
 let pendingCloudPush = false;
 
 const DEFAULT_DOCTORS = [];
@@ -40,6 +41,7 @@ const DEFAULT_TARIFFS = {
 
 let state = {
   records: [],
+  deletedIds: [],
   doctors: [],
   provinces: [],
   tariffs: { ...DEFAULT_TARIFFS },
@@ -141,6 +143,9 @@ function loadStateFromStorage() {
     const savedTariffs = localStorage.getItem(STORAGE_KEYS.TARIFFS);
     const savedRecords = localStorage.getItem(STORAGE_KEYS.RECORDS);
     const safeguardRecords = localStorage.getItem(STORAGE_KEYS.SAFEGUARD_RECORDS);
+    const savedDeleted = localStorage.getItem('biodent_deleted_ids_v2');
+
+    state.deletedIds = savedDeleted ? JSON.parse(savedDeleted) : [];
 
     state.doctors = savedDoctors ? JSON.parse(savedDoctors) : [...DEFAULT_DOCTORS];
     state.provinces = savedProvinces ? JSON.parse(savedProvinces) : [...DEFAULT_PROVINCES];
@@ -197,6 +202,7 @@ async function pushToCloudDatabase(isExplicitClear = false) {
     updateCloudBadgeUI('offline');
     return;
   }
+  isPushingCloud = true;
   try {
     updateCloudBadgeUI('syncing');
     const nowTs = Date.now();
@@ -205,6 +211,7 @@ async function pushToCloudDatabase(isExplicitClear = false) {
       updatedAt: nowTs,
       clearedAt: isExplicitClear ? nowTs : Number(localStorage.getItem('biodent_cleared_at_v2') || 0),
       records: state.records,
+      deletedIds: state.deletedIds || [],
       doctors: state.doctors,
       provinces: state.provinces,
       tariffs: state.tariffs
@@ -216,24 +223,27 @@ async function pushToCloudDatabase(isExplicitClear = false) {
     });
     if (res.ok) {
       pendingCloudPush = false;
-      updateCloudBadgeUI('online');
+      updateCloudBadgeUI('online', `☁️ Nube Sincronizada (${state.records.length})`);
     } else {
+      pendingCloudPush = true;
       updateCloudBadgeUI('offline');
     }
   } catch (_) {
     pendingCloudPush = true;
     updateCloudBadgeUI('offline');
+  } finally {
+    isPushingCloud = false;
   }
 }
 
 async function pullFromCloudDatabase(isInitialBoot = false) {
-  if (!navigator.onLine || isSyncingCloud) {
+  if (!navigator.onLine || isSyncingCloud || isPushingCloud) {
     if (!navigator.onLine) updateCloudBadgeUI('offline');
     return;
   }
   isSyncingCloud = true;
   try {
-    const res = await fetch(FIREBASE_DB_URL, { cache: 'no-store' });
+    const res = await fetch(`${FIREBASE_DB_URL}?t=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) {
       updateCloudBadgeUI('offline');
       isSyncingCloud = false;
@@ -241,24 +251,25 @@ async function pullFromCloudDatabase(isInitialBoot = false) {
     }
     const cloudData = await res.json();
 
-    // Si la nube aún está vacía pero esta PC tiene datos, subirlos a la nube
-    if (!cloudData) {
+    // Si la nube aún está vacía pero esta PC tiene datos, subirlos inmediatamente a la nube
+    if (!cloudData || (!Array.isArray(cloudData.records) && state.records.length > 0)) {
       if (state.records.length > 0 || state.doctors.length > 0) {
+        isSyncingCloud = false;
         await pushToCloudDatabase(false);
-      } else {
-        updateCloudBadgeUI('online');
+        return;
       }
+      updateCloudBadgeUI('online', '☁️ Nube Sincronizada (0)');
       isSyncingCloud = false;
       return;
     }
 
     const cloudUpdatedAt = Number(cloudData.updatedAt || 0);
-    const localUpdatedAt = Number(localStorage.getItem(STORAGE_KEYS.CLOUD_UPDATED_AT) || 0);
     const cloudClearedAt = Number(cloudData.clearedAt || 0);
     const localClearedAt = Number(localStorage.getItem('biodent_cleared_at_v2') || 0);
+    const cloudRecords = Array.isArray(cloudData.records) ? cloudData.records : [];
 
-    // Si en otro dispositivo se dio clic en "Dejar en Cero" más recientemente
-    if (cloudClearedAt > localClearedAt && (!Array.isArray(cloudData.records) || cloudData.records.length === 0)) {
+    // Si en otro dispositivo se dio clic en "Dejar en Cero" explícitamente
+    if (cloudClearedAt > localClearedAt && cloudRecords.length === 0 && cloudUpdatedAt === cloudClearedAt) {
       localStorage.setItem('biodent_cleared_at_v2', String(cloudClearedAt));
       localStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, String(cloudUpdatedAt));
       localStorage.removeItem(STORAGE_KEYS.SAFEGUARD_RECORDS);
@@ -269,52 +280,63 @@ async function pullFromCloudDatabase(isInitialBoot = false) {
       saveStateToStorage(false);
       populateDatalists();
       renderAll();
-      updateCloudBadgeUI('online');
+      updateCloudBadgeUI('online', '☁️ Nube Sincronizada (0)');
       isSyncingCloud = false;
       return;
     }
 
-    const cloudRecords = Array.isArray(cloudData.records) ? cloudData.records : [];
+    // Unir IDs eliminados y registros de la nube + registros locales para que ningún dispositivo pierda pacientes
+    const cloudDeleted = Array.isArray(cloudData.deletedIds) ? cloudData.deletedIds : [];
+    const deletedSet = new Set([...(state.deletedIds || []), ...cloudDeleted]);
+    state.deletedIds = Array.from(deletedSet);
+    localStorage.setItem('biodent_deleted_ids_v2', JSON.stringify(state.deletedIds));
 
-    // En el arranque inicial, o si la nube tiene cambios más recientes, sincronizar
-    if (isInitialBoot || cloudUpdatedAt > localUpdatedAt || state.records.length === 0) {
-      if (cloudUpdatedAt >= localUpdatedAt) {
-        state.records = cloudRecords;
-      } else {
-        // Combinar si hubiera algún registro local creado sin internet
-        const mergedMap = new Map();
-        cloudRecords.forEach((r) => {
-          if (r && r.id) mergedMap.set(r.id, r);
-        });
-        state.records.forEach((r) => {
-          if (r && r.id && !mergedMap.has(r.id)) mergedMap.set(r.id, r);
-        });
-        state.records = Array.from(mergedMap.values()).sort((a, b) =>
-          (b.datetime || '').localeCompare(a.datetime || '')
-        );
-      }
+    const mergedMap = new Map();
+    state.records.forEach((r) => {
+      if (r && r.id && !deletedSet.has(r.id)) mergedMap.set(r.id, r);
+    });
+    cloudRecords.forEach((r) => {
+      if (r && r.id && !deletedSet.has(r.id)) mergedMap.set(r.id, r);
+    });
 
-      if (Array.isArray(cloudData.doctors)) {
-        cloudData.doctors.forEach((d) => ensureCatalogEntry(state.doctors, d));
-      }
-      if (Array.isArray(cloudData.provinces)) {
-        cloudData.provinces.forEach((p) => ensureCatalogEntry(state.provinces, p));
-      }
-      if (cloudData.tariffs) {
-        state.tariffs = { ...DEFAULT_TARIFFS, ...cloudData.tariffs };
-        if (state.tariffs['Periapical']) state.tariffs['Periapical'].commission = 0;
-      }
+    const mergedRecords = Array.from(mergedMap.values()).sort((a, b) =>
+      (b.datetime || '').localeCompare(a.datetime || '')
+    );
 
-      localStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, String(Math.max(cloudUpdatedAt, localUpdatedAt)));
-      saveStateToStorage(false);
-      populateDatalists();
-      renderAll();
+    const hadFewerLocal = state.records.length !== mergedRecords.length || isInitialBoot;
+    const cloudHasFewer = cloudRecords.length < mergedRecords.length;
 
-      if (pendingCloudPush || state.records.length > cloudRecords.length) {
-        await pushToCloudDatabase(false);
-      }
+    state.records = mergedRecords;
+
+    if (Array.isArray(cloudData.doctors)) {
+      cloudData.doctors.forEach((d) => ensureCatalogEntry(state.doctors, d));
     }
-    updateCloudBadgeUI('online');
+    if (Array.isArray(cloudData.provinces)) {
+      cloudData.provinces.forEach((p) => ensureCatalogEntry(state.provinces, p));
+    }
+    if (cloudData.tariffs) {
+      state.tariffs = { ...DEFAULT_TARIFFS, ...cloudData.tariffs };
+      if (state.tariffs['Periapical']) state.tariffs['Periapical'].commission = 0;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, String(Math.max(cloudUpdatedAt, Date.now())));
+    saveStateToStorage(false);
+    populateDatalists();
+
+    // Si hay registros en total pero el filtro de fecha actual ("Este Mes"/"Hoy") los oculta, mostrar "Todos los Registros"
+    if (state.records.length > 0 && getRecordsForPeriod().length === 0) {
+      setDateRangeFilter('all');
+    } else if (hadFewerLocal) {
+      renderAll();
+    }
+
+    if (pendingCloudPush || cloudHasFewer) {
+      isSyncingCloud = false;
+      await pushToCloudDatabase(false);
+      return;
+    }
+
+    updateCloudBadgeUI('online', `☁️ Nube Sincronizada (${state.records.length})`);
   } catch (_) {
     updateCloudBadgeUI('offline');
   } finally {
@@ -1231,6 +1253,11 @@ function openDeleteModal(id) {
 
 document.getElementById('confirm-delete-btn').addEventListener('click', () => {
   if (!state.pendingDeleteId) return;
+  if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
+  if (!state.deletedIds.includes(state.pendingDeleteId)) {
+    state.deletedIds.push(state.pendingDeleteId);
+    localStorage.setItem('biodent_deleted_ids_v2', JSON.stringify(state.deletedIds));
+  }
   state.records = state.records.filter((r) => r.id !== state.pendingDeleteId);
   state.pendingDeleteId = null;
   saveStateToStorage();
@@ -2293,6 +2320,12 @@ function handleImportJSONFile(event) {
           true
         );
         return;
+      }
+
+      const importedIdSet = new Set(importedRecords.map((r) => r.id));
+      if (Array.isArray(state.deletedIds)) {
+        state.deletedIds = state.deletedIds.filter((id) => !importedIdSet.has(id));
+        localStorage.setItem('biodent_deleted_ids_v2', JSON.stringify(state.deletedIds));
       }
 
       // Combinar registros existentes con los importados sin duplicar para no perder órdenes nuevas
