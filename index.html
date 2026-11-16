@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BioDent Tomografías | Control de Radiología y Comisiones</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- SIDEBAR DE NAVEGACIÓN -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo-wrap">
+          <img src="logo.jpg" alt="Logo BioDent Tomografías" />
+        </div>
+        <div class="brand-text">
+          <h1>BioDent</h1>
+          <span>Tomografías &amp; RX</span>
+        </div>
+      </div>
+
+      <div class="offline-badge" id="sidebar-license-badge" style="cursor: pointer;" onclick="openLicenseModal()" title="Clic para ver o activar Licencia del Sistema">
+        <span class="status-dot" id="sidebar-license-dot"></span>
+        <span id="sidebar-license-text">⏳ Prueba: 7 días restantes</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Operaciones Diarias</div>
+        <button class="nav-btn active" data-view="view-operations" onclick="switchView('view-operations')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Registro y Órdenes</span>
+          <span class="badge-count" id="nav-count-records">0</span>
+        </button>
+
+        <button class="nav-btn" data-view="view-cash" onclick="switchView('view-cash')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Cierre de Caja y Día</span>
+        </button>
+
+        <div class="nav-section-label">Inteligencia y Reportes</div>
+        <button class="nav-btn" data-view="view-analytics" onclick="switchView('view-analytics')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Dashboard Analítico</span>
+        </button>
+
+        <button class="nav-btn" data-view="view-doctors" onclick="switchView('view-doctors')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Comisiones y Doctores</span>
+        </button>
+
+        <div class="nav-section-label">Sistema y Portabilidad</div>
+        <button class="nav-btn" data-view="view-utilities" onclick="switchView('view-utilities')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Backups y Tarifario</span>
+        </button>
+      </nav>
+
+      <!-- ACCESOS RÁPIDOS DE PORTABILIDAD EN SIDEBAR -->
+      <div class="sidebar-footer">
+        <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Portabilidad Rápida</div>
+        <div class="sidebar-footer-actions">
+          <button class="btn-sidebar-util" onclick="exportBackupJSON()" title="Descargar copia de seguridad JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Backup JSON
+          </button>
+          <button class="btn-sidebar-util" onclick="triggerImportJSON()" title="Restaurar desde archivo JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Importar
+          </button>
+        </div>
+        <button class="btn-sidebar-util" style="width: 100%; background: rgba(16, 185, 129, 0.18); border-color: rgba(16, 185, 129, 0.4); color: #a7f3d0;" onclick="exportFilteredCSV()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Exportar a Excel (CSV)
+        </button>
+        <input type="file" id="hidden-json-input" accept=".json,application/json,.csv,text/csv" style="display: none;" onchange="handleImportJSONFile(event)" />
+        <div class="author-signature-sidebar" id="sig-sidebar" style="flex-direction: column; align-items: flex-start; gap: 3px;">
+          <div style="display: flex; justify-content: space-between; width: 100%;">
+            <span>Desarrollo</span>
+            <strong>By. Carlos Neira</strong>
+          </div>
+          <a href="https://wa.me/51969029276?text=Hola%20Carlos%20Neira%2C%20solicito%20soporte%20o%20activaci%C3%B3n%20para%20el%20sistema%20BioDent%20Tomograf%C3%ADas." target="_blank" rel="noopener noreferrer" style="color: #a7f3d0; font-weight: 700; font-size: 0.76rem; text-decoration: underline; cursor: pointer;">
+            📲 WhatsApp: 969 029 276
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="main-area">
+      <!-- BARRA SUPERIOR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menú">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="page-title">
+            <h2 id="current-view-title">Control de Radiología Odontológica y Comisiones</h2>
+            <p id="current-view-subtitle">Gestión clínica local de placas radiográficas, tomografías Cone Beam y liquidación a doctores</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" class="btn btn-outline btn-sm" id="cloud-sync-badge" onclick="forceCloudSyncNow()" title="Clic para sincronizar ahora con la nube" style="border-color: #a7f3d0; background: #ecfdf5; color: #065f46;">
+            ☁️ Sincronizando...
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="openTariffsModal()">
+            ⚙️ Precios de Exámenes
+          </button>
+        </div>
+      </header>
+
+      <!-- BARRA GLOBAL DE FILTRO POR RANGO DE FECHAS -->
+      <section class="date-filter-bar">
+        <div class="quick-filters">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Periodo:
+          </span>
+          <button class="chip-btn" data-range="today" onclick="setDateRangeFilter('today')">Hoy</button>
+          <button class="chip-btn" data-range="week" onclick="setDateRangeFilter('week')">Esta Semana</button>
+          <button class="chip-btn active" data-range="month" onclick="setDateRangeFilter('month')">Este Mes</button>
+          <button class="chip-btn" data-range="all" onclick="setDateRangeFilter('all')">Todos los Registros</button>
+          <button class="chip-btn" data-range="custom" onclick="setDateRangeFilter('custom')">Personalizado</button>
+        </div>
+
+        <div class="custom-date-inputs" id="custom-date-box" style="display: none;">
+          <label for="filter-date-start">Desde:</label>
+          <div class="dmy-control dmy-compact" data-target="filter-date-start" data-has-time="false">
+            <input type="text" class="dmy-text-input" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" onfocus="this.select()" oninput="onDmyTextInput('filter-date-start')" onblur="onDmyTextBlur('filter-date-start')" title="Escriba de corrido Día/Mes/Año (ej. 16112026)" />
+            <button type="button" class="dmy-cal-btn" onclick="openNativePicker('filter-date-start')" title="Elegir en calendario">📅</button>
+            <input type="date" id="filter-date-start" class="dmy-native-hidden" onchange="syncDmyFromInput('filter-date-start'); applyCustomDateRange();" />
+          </div>
+
+          <label for="filter-date-end">Hasta:</label>
+          <div class="dmy-control dmy-compact" data-target="filter-date-end" data-has-time="false">
+            <input type="text" class="dmy-text-input" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" onfocus="this.select()" oninput="onDmyTextInput('filter-date-end')" onblur="onDmyTextBlur('filter-date-end')" title="Escriba de corrido Día/Mes/Año (ej. 16112026)" />
+            <button type="button" class="dmy-cal-btn" onclick="openNativePicker('filter-date-end')" title="Elegir en calendario">📅</button>
+            <input type="date" id="filter-date-end" class="dmy-native-hidden" onchange="syncDmyFromInput('filter-date-end'); applyCustomDateRange();" />
+          </div>
+        </div>
+
+        <div class="active-period-pill" id="active-period-label">Mostrando: Este Mes</div>
+      </section>
+
+      <!-- CONTENEDOR PRINCIPAL -->
+      <main class="content-container">
+        <!-- ===============================================================
+             VISTA 1: REGISTRO DE NUEVAS PLACAS + TABLA PRINCIPAL INTERACTIVA
+             =============================================================== -->
+        <section id="view-operations" class="view-section active">
+          <div class="operations-stack">
+            <!-- MÓDULO 1: FORMULARIO DE REGISTRO DE NUEVAS PLACAS / ÓRDENES (DISEÑO LIMPIO EN 3 BLOQUES) -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--med-blue-700)" stroke-width="2.2">
+                    <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <h3>Nueva Orden Radiológica</h3>
+                    <p>Complete los datos del paciente, seleccione el estudio y registre el pago</p>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button type="button" class="btn btn-outline btn-sm" onclick="openTariffsModal()">⚙️ Editar Precios</button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="resetOrderForm()">Limpiar Formulario</button>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <form id="order-form" onsubmit="handleSaveOrder(event)">
+                  <div class="clean-order-grid">
+                    <!-- BLOQUE 1: DATOS DEL PACIENTE Y REMITENTE -->
+                    <div class="order-col-box">
+                      <div class="order-col-title">
+                        <span>1. Datos del Paciente y Doctor</span>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label" for="inp-datetime">
+                          <span>Fecha y Hora (Escriba DD/MM/AAAA) <span class="req">*</span></span>
+                          <button type="button" class="label-action-btn" onclick="setNowToDateTimeInput('inp-datetime')">Ahora</button>
+                        </label>
+                        <div class="dmy-control" data-target="inp-datetime" data-has-time="true">
+                          <input type="text" class="dmy-text-input" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" onfocus="this.select()" oninput="onDmyTextInput('inp-datetime')" onblur="onDmyTextBlur('inp-datetime')" title="Escriba de corrido Día/Mes/Año (ej. 16112026)" />
+                          <input type="time" class="dmy-time" aria-label="Hora" onchange="onDmyTimeChange('inp-datetime')" />
+                          <button type="button" class="dmy-cal-btn" onclick="openNativePicker('inp-datetime')" title="Abrir calendario">📅</button>
+                          <input type="datetime-local" id="inp-datetime" class="dmy-native-hidden" required onchange="syncDmyFromInput('inp-datetime')" />
+                        </div>
+                      </div>
+
+                      <div class="form-row" style="grid-template-columns: 1.35fr 0.95fr;">
+                        <div class="form-group">
+                          <label class="form-label" for="inp-patient">
+                            <span>Nombre del Paciente <span class="req">*</span></span>
+                          </label>
+                          <input type="text" id="inp-patient" class="form-control" placeholder="Ej. María Elena Díaz Pérez" required autocomplete="off" />
+                        </div>
+
+                        <div class="form-group">
+                          <label class="form-label" for="inp-province">
+                            <span>Provincia <span class="req">*</span></span>
+                            <button type="button" class="label-action-btn" onclick="openQuickAddModal('province')">+ Nueva</button>
+                          </label>
+                          <input type="text" id="inp-province" list="provinces-datalist" class="form-control" placeholder="Ej. Chota, Cutervo..." required autocomplete="off" />
+                          <datalist id="provinces-datalist"></datalist>
+                        </div>
+                      </div>
+
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="inp-doctor">
+                          <span>Doctor Solicitante (Remitente) <span class="req">*</span></span>
+                          <button type="button" class="label-action-btn" onclick="openQuickAddModal('doctor')">+ Nuevo Doctor</button>
+                        </label>
+                        <input type="text" id="inp-doctor" list="doctors-datalist" class="form-control" placeholder="Seleccione o escriba el nombre del Dr(a)." required autocomplete="off" />
+                        <datalist id="doctors-datalist"></datalist>
+                      </div>
+                    </div>
+
+                    <!-- BLOQUE 2: EXAMEN RADIOLÓGICO Y COMISIÓN -->
+                    <div class="order-col-box">
+                      <div class="order-col-title">
+                        <span>2. Selección de Examen y Comisión</span>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">
+                          <span>Tipo de Placa / Estudio (Puede marcar 1 o más) <span class="req">*</span></span>
+                        </label>
+                        <div class="plate-selector" id="plate-selector-cards">
+                          <div class="plate-option selected" data-plate="Panorámica" onclick="selectPlateType('Panorámica')">
+                            <span class="plate-name">P. Panorámica</span>
+                            <span class="plate-price-hint" id="hint-panoramica">S/ 80 · Com: S/ 20</span>
+                          </div>
+                          <div class="plate-option" data-plate="Cefalométrica" onclick="selectPlateType('Cefalométrica')">
+                            <span class="plate-name">Cefalométrica</span>
+                            <span class="plate-price-hint" id="hint-cefalometrica">S/ 80 · Com: S/ 20</span>
+                          </div>
+                          <div class="plate-option" data-plate="Periapical" onclick="selectPlateType('Periapical')">
+                            <span class="plate-name">Periapical</span>
+                            <span class="plate-price-hint" id="hint-periapical">S/ 25</span>
+                          </div>
+                          <div class="plate-option" data-plate="Tomografía Cone Beam" onclick="selectPlateType('Tomografía Cone Beam')">
+                            <span class="plate-name">Tomografía Cone Beam</span>
+                            <span class="plate-price-hint" id="hint-conebeam">S/ 180 · Com: S/ 40</span>
+                          </div>
+                        </div>
+                        <input type="hidden" id="inp-plate-type" value="Panorámica" required />
+                      </div>
+
+                      <div class="form-row" id="price-comm-row">
+                        <div class="form-group" style="margin-bottom: 0.75rem;">
+                          <label class="form-label" for="inp-amount">
+                            <span>Precio del Examen (S/) <span class="req">*</span></span>
+                          </label>
+                          <input type="number" step="0.50" min="0" id="inp-amount" class="form-control" placeholder="0.00" required oninput="handleTotalAmountChange()" />
+                        </div>
+
+                        <div class="form-group" id="commission-input-group" style="margin-bottom: 0.75rem;">
+                          <label class="form-label" for="inp-commission">
+                            <span>Comisión Doctor (S/)</span>
+                          </label>
+                          <input type="number" step="0.50" min="0" id="inp-commission" class="form-control" placeholder="0.00" required oninput="updateNetPreview()" />
+                        </div>
+                      </div>
+
+                      <!-- Estado de la Comisión al Doctor (Se oculta en Periapical) -->
+                      <div class="form-group" id="form-comm-status-group" style="margin-bottom: 0;">
+                        <label class="form-label">
+                          <span>¿Se entregó la comisión al Doctor?</span>
+                        </label>
+                        <div class="comm-status-selector">
+                          <div class="comm-status-opt pending selected" id="comm-opt-pending" onclick="selectFormCommissionStatus(false)">
+                            ⏳ Pendiente
+                          </div>
+                          <div class="comm-status-opt paid" id="comm-opt-paid" onclick="selectFormCommissionStatus(true)">
+                            ✅ Cancelado
+                          </div>
+                        </div>
+                        <input type="hidden" id="inp-comm-paid" value="false" />
+                      </div>
+                    </div>
+
+                    <!-- BLOQUE 3: MÉTODO DE PAGO Y CONFIRMACIÓN -->
+                    <div class="order-col-box">
+                      <div class="order-col-title">
+                        <span>3. Método de Pago y Registro</span>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">
+                          <span>Método de Pago <span class="req">*</span></span>
+                        </label>
+                        <div class="payment-selector">
+                          <div class="payment-option efectivo selected" id="pay-opt-efectivo" onclick="selectPaymentMethod('Efectivo')">
+                            <span>💵 Efectivo</span>
+                          </div>
+                          <div class="payment-option yape" id="pay-opt-yape" onclick="selectPaymentMethod('Yape')">
+                            <span>📱 Yape</span>
+                          </div>
+                          <div class="payment-option mixto" id="pay-opt-mixto" onclick="selectPaymentMethod('Mixto')">
+                            <span>🔀 Pago Mixto</span>
+                          </div>
+                        </div>
+                        <input type="hidden" id="inp-payment-method" value="Efectivo" required />
+
+                        <!-- Desglose de Pago Mixto (Efectivo + Yape) -->
+                        <div class="mixed-payment-box" id="mixed-payment-box" style="display: none;">
+                          <div style="font-size: 0.75rem; font-weight: 700; color: var(--med-blue-800); margin-bottom: 0.4rem;">
+                            Desglose de Pago Mixto:
+                          </div>
+                          <div class="form-row">
+                            <div>
+                              <label class="form-label" style="font-size: 0.74rem;">💵 Efectivo (S/)</label>
+                              <input type="number" step="0.50" min="0" id="inp-mix-efectivo" class="form-control" placeholder="0.00" oninput="handleMixSplitInput('efectivo')" />
+                            </div>
+                            <div>
+                              <label class="form-label" style="font-size: 0.74rem;">📱 Yape (S/)</label>
+                              <input type="number" step="0.50" min="0" id="inp-mix-yape" class="form-control" placeholder="0.00" oninput="handleMixSplitInput('yape')" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="net-preview-box" style="background: #ffffff; border-style: solid;">
+                        <span>Ingreso Neto BioDent:</span>
+                        <strong id="order-net-preview">S/ 60.00</strong>
+                      </div>
+
+                      <button type="submit" class="btn btn-primary btn-block">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                          <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Registrar Orden Radiológica
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- MÓDULO 2: LISTADO Y GESTIÓN DE REGISTROS (TABLA PRINCIPAL A ANCHO COMPLETO) -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-emerald-700)" stroke-width="2.2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <h3>Listado de Estudios y Órdenes</h3>
+                    <p id="table-results-subtitle">Mostrando registros del periodo seleccionado</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="btn btn-outline btn-sm" onclick="switchView('view-cash')">
+                    Ver Cierre de Caja
+                  </button>
+                  <button class="btn btn-emerald btn-sm" onclick="exportFilteredCSV()">
+                    Exportar CSV
+                  </button>
+                </div>
+              </div>
+
+              <!-- Barra de Búsqueda en Tiempo Real y Filtros en Una Sola Línea -->
+              <div class="table-toolbar">
+                <div class="search-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <input type="text" id="search-input" placeholder="Buscar por nombre de doctor, paciente o provincia al toque..." oninput="renderAll()" />
+                </div>
+
+                <div class="toolbar-selects">
+                  <select id="filter-doctor" onchange="renderAll()" style="border-color: var(--med-blue-500); background: var(--med-blue-50); color: var(--med-blue-900);">
+                    <option value="ALL">👨‍⚕️ Todos los Doctores</option>
+                  </select>
+
+                  <select id="filter-comm-status" onchange="renderAll()">
+                    <option value="ALL">Comisión: Todas</option>
+                    <option value="PENDING">⏳ Comisión Pendiente</option>
+                    <option value="PAID">✅ Comisión Cancelada</option>
+                  </select>
+
+                  <select id="filter-plate" onchange="renderAll()">
+                    <option value="ALL">Todas las Placas</option>
+                    <option value="Panorámica">P. Panorámica</option>
+                    <option value="Cefalométrica">Cefalométrica</option>
+                    <option value="Periapical">Periapical</option>
+                    <option value="Tomografía Cone Beam">Tomografía Cone Beam</option>
+                  </select>
+
+                  <select id="filter-payment" onchange="renderAll()">
+                    <option value="ALL">Todos los Pagos</option>
+                    <option value="Efectivo">💵 Efectivo</option>
+                    <option value="Yape">📱 Yape</option>
+                    <option value="Mixto">🔀 Pago Mixto</option>
+                  </select>
+
+                  <select id="filter-province" onchange="renderAll()">
+                    <option value="ALL">Todas las Provincias</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Resumen Rápido cuando se filtra o selecciona un Doctor -->
+              <div id="doctor-filter-banner" class="doctor-filter-banner" style="display: none;"></div>
+
+              <!-- Tabla Interactiva -->
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha / Hora</th>
+                      <th>Paciente</th>
+                      <th>Doctor Solicitante</th>
+                      <th>Provincia</th>
+                      <th>Tipo de Placa</th>
+                      <th>Pago</th>
+                      <th style="text-align: right;">Monto (S/)</th>
+                      <th style="text-align: right;">Comisión (S/)</th>
+                      <th style="text-align: right;">Neto (S/)</th>
+                      <th style="text-align: center;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="records-tbody"></tbody>
+                  <tfoot id="records-tfoot"></tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VISTA 2: CIERRE DE CAJA Y PRODUCCIÓN TOTAL DEL DÍA / PERIODO
+             =============================================================== -->
+        <section id="view-cash" class="view-section">
+          <div class="card" style="margin-bottom: 1.35rem;">
+            <div class="card-header" style="padding: 1.35rem 1.6rem;">
+              <div class="card-header-title" style="gap: 1.25rem;">
+                <img src="logo.jpg" alt="BioDent Tomografías" class="report-header-logo" />
+                <div>
+                  <h3 id="cash-report-title" style="font-size: 1.45rem; font-weight: 900; letter-spacing: 0.02em; color: var(--slate-900); text-transform: uppercase;">INFORME DEL MES</h3>
+                  <p id="cash-period-subtitle" style="font-size: 0.9rem; font-weight: 600; color: var(--slate-600); margin-top: 0.25rem;">Periodo evaluado: Este Mes · Total de estudios: 0</p>
+                </div>
+              </div>
+              <div class="no-print" style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-outline btn-sm" onclick="setDateRangeFilter('today')">Ver Informe del Día</button>
+                <button class="btn btn-primary btn-sm" onclick="window.print()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Imprimir Informe
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <!-- RESUMEN DESTACADO DE CANTIDADES DE PLACAS PARA EL INFORME IMPRESO -->
+              <div class="report-exam-counts-grid" id="cash-exam-counts-strip"></div>
+
+              <div class="cash-grid">
+                <!-- Columna 1: Balance General de Caja -->
+                <div class="card" style="border-color: var(--slate-200);">
+                  <div class="card-header">
+                    <div class="card-header-title">
+                      <h3>1. Balance Financiero del Periodo</h3>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="breakdown-list" id="cash-financial-summary"></div>
+                  </div>
+                </div>
+
+                <!-- Columna 2: Desglose por Método de Pago (Efectivo vs Yape) -->
+                <div class="card" style="border-color: var(--slate-200);">
+                  <div class="card-header">
+                    <div class="card-header-title">
+                      <h3>2. Arqueo por Método de Pago</h3>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="breakdown-list" id="cash-payment-breakdown"></div>
+                  </div>
+                </div>
+
+                <!-- Columna 3: Estudios Realizados por Tipo de Placa -->
+                <div class="card" style="border-color: var(--slate-200);">
+                  <div class="card-header">
+                    <div class="card-header-title">
+                      <h3>3. Estudios Realizados por Tipo de Placa</h3>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="breakdown-list" id="cash-plate-breakdown"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PIE DE PÁGINA OFICIAL DEL REPORTE (FUERA DEL CUADRO, AL FINAL DE LA HOJA) -->
+          <div class="report-print-footer">
+            REPORTE GENERADO POR SYSTEM BIODENT BY CARLOS NEIRA
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VISTA 3: REPORTES AVANZADOS Y ESTADÍSTICAS (DASHBOARD ANALÍTICO)
+             =============================================================== -->
+        <section id="view-analytics" class="view-section">
+          <!-- TARJETAS DE RESUMEN FINANCIERO EN EL DASHBOARD ANALÍTICO -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Producción Total</span>
+                <div class="kpi-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi-value" id="kpi-total-prod">S/ 0.00</div>
+              <div class="kpi-sub">
+                <span id="kpi-studies-count">0 estudios realizados</span>
+              </div>
+            </div>
+
+            <div class="kpi-card purple">
+              <div class="kpi-header">
+                <span class="kpi-title">Efectivo vs. Yape</span>
+                <div class="kpi-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi-value" style="font-size: 1.25rem;" id="kpi-pay-split">Efec: S/ 0 | Yape: S/ 0</div>
+              <div class="kpi-sub" id="kpi-pay-counts">0 en Efectivo · 0 en Yape</div>
+            </div>
+
+            <div class="kpi-card amber">
+              <div class="kpi-header">
+                <span class="kpi-title">Comisiones a Doctores</span>
+                <div class="kpi-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi-value" id="kpi-total-comm">S/ 0.00</div>
+              <div class="kpi-sub" id="kpi-comm-status">Pendiente: S/ 0.00</div>
+            </div>
+
+            <div class="kpi-card emerald">
+              <div class="kpi-header">
+                <span class="kpi-title">Utilidad Neta BioDent</span>
+                <div class="kpi-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi-value" style="color: var(--brand-emerald-700);" id="kpi-net-profit">S/ 0.00</div>
+              <div class="kpi-sub" id="kpi-profit-margin">Producción - Comisiones (0%)</div>
+            </div>
+          </div>
+
+          <div class="analytics-grid">
+            <!-- Ranking de Doctores -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--med-blue-700)" stroke-width="2">
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <h3>Ranking de Doctores Solicitantes</h3>
+                    <p>Ordenado por volumen de pacientes y monto generado</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body" id="analytics-doctors-ranking"></div>
+            </div>
+
+            <!-- Tipo de Placa más Vendida -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-emerald-700)" stroke-width="2">
+                    <path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <h3>Tipo de Placa más Vendida</h3>
+                    <p>Distribución porcentual, cantidad e ingresos por estudio</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body" id="analytics-plates-chart"></div>
+            </div>
+
+            <!-- Distribución por Provincias -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--med-blue-700)" stroke-width="2">
+                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <h3>Distribución Geográfica por Provincias</h3>
+                    <p>Procedencia de pacientes (Chota, Cutervo, Jaén, Piura, etc.)</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body" id="analytics-provinces-chart"></div>
+            </div>
+
+            <!-- Métricas Financieras de Rendimiento -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-emerald-700)" stroke-width="2">
+                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <h3>Métricas Financieras y Rendimiento Diario</h3>
+                    <p>Evolución de ingresos, comisiones y ticket promedio</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body" id="analytics-financial-metrics"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VISTA 4: DIRECTORIO DE DOCTORES Y LIQUIDACIÓN DE COMISIONES
+             =============================================================== -->
+        <section id="view-doctors" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-title">
+                <div>
+                  <h3>Control de Comisiones por Doctor Solicitante</h3>
+                  <p>Gestione pagos de comisiones pendientes o liquidadas en el periodo</p>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openQuickAddModal('doctor')">+ Registrar Doctor Frecuente</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Doctor Solicitante</th>
+                    <th style="text-align: center;">Total Órdenes</th>
+                    <th>Detalle de Placas</th>
+                    <th style="text-align: right;">Producción Total (S/)</th>
+                    <th style="text-align: right;">Comisión Pagada (S/)</th>
+                    <th style="text-align: right;">Comisión Pendiente (S/)</th>
+                    <th style="text-align: center;">Acción Rápida</th>
+                  </tr>
+                </thead>
+                <tbody id="doctors-commissions-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VISTA 5: UTILIDADES, PORTABILIDAD Y TARIFARIO
+             =============================================================== -->
+        <section id="view-utilities" class="view-section">
+          <div class="analytics-grid">
+            <!-- Portabilidad Offline: Backup / Restore / CSV -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <div>
+                    <h3>Portabilidad y Respaldo (Modo Sin Conexión)</h3>
+                    <p>Lleve su base de datos a cualquier otra laptop o exporte hojas de cálculo</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="breakdown-list">
+                  <div class="breakdown-item">
+                    <div>
+                      <strong>Exportar Datos (Backup JSON)</strong>
+                      <p style="font-size: 0.8rem; color: var(--slate-500);">Descarga un archivo JSON con todos los registros, doctores, provincias y tarifas.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="exportBackupJSON()">Descargar JSON</button>
+                  </div>
+
+                  <div class="breakdown-item">
+                    <div>
+                      <strong>Importar Datos (Restaurar JSON)</strong>
+                      <p style="font-size: 0.8rem; color: var(--slate-500);">Cargue un respaldo JSON previo para sincronizar o restaurar información en esta laptop.</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="triggerImportJSON()">Cargar Archivo JSON</button>
+                  </div>
+
+                  <div class="breakdown-item">
+                    <div>
+                      <strong>Exportar a Excel (CSV)</strong>
+                      <p style="font-size: 0.8rem; color: var(--slate-500);">Descarga la tabla filtrada actual compatible directamente con Microsoft Excel.</p>
+                    </div>
+                    <button class="btn btn-emerald" onclick="exportFilteredCSV()">Exportar Excel (CSV)</button>
+                  </div>
+
+                  <div class="breakdown-item" style="border-color: #fecaca; background: var(--danger-50);">
+                    <div>
+                      <strong style="color: var(--danger-600);">Reiniciar Sistema en Cero</strong>
+                      <p style="font-size: 0.8rem; color: var(--slate-600);">Elimina todos los registros y doctores de prueba para empezar desde cero.</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="resetAllDataToZero()">Dejar en Cero</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Configuración de Precios y Comisiones Sugeridas -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <div>
+                    <h3>Tarifario Base y Comisiones Sugeridas</h3>
+                    <p>Se autocompletan al elegir el tipo de placa (100% editables en cada orden)</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <form onsubmit="saveTariffsConfig(event)">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">P. Panorámica - Precio (S/)</label>
+                      <input type="number" step="0.5" id="cfg-price-panoramica" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">P. Panorámica - Comisión (S/)</label>
+                      <input type="number" step="0.5" id="cfg-comm-panoramica" class="form-control" required />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Cefalométrica - Precio (S/)</label>
+                      <input type="number" step="0.5" id="cfg-price-cefalometrica" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Cefalométrica - Comisión (S/)</label>
+                      <input type="number" step="0.5" id="cfg-comm-cefalometrica" class="form-control" required />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Periapical - Precio (S/)</label>
+                      <input type="number" step="0.5" id="cfg-price-periapical" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Periapical - Comisión</label>
+                      <input type="text" id="cfg-comm-periapical" class="form-control" value="Sin comisión (S/ 0.00)" disabled style="background: var(--slate-100); color: var(--slate-500);" />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Tomografía Cone Beam - Precio (S/)</label>
+                      <input type="number" step="0.5" id="cfg-price-conebeam" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Tomografía Cone Beam - Comisión (S/)</label>
+                      <input type="number" step="0.5" id="cfg-comm-conebeam" class="form-control" required />
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary">Guardar Tarifas Predeterminadas</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- PIE DE PÁGINA OFICIAL CON AUTORÍA PROTEGIDA -->
+      <footer class="app-footer" id="sig-footer">
+        <div>
+          <strong>BioDent Tomografías</strong> · Sistema de Control y Gestión de Radiología Odontológica y Comisiones (Licencia Local Offline)
+        </div>
+        <div class="author-pill" id="sig-author-badge">
+          <span>By. Carlos Neira</span>
+          <span style="color: #fff; opacity: 0.4;">|</span>
+          <a href="https://wa.me/51969029276?text=Hola%20Carlos%20Neira%2C%20solicito%20soporte%20o%20activaci%C3%B3n%20para%20el%20sistema%20BioDent%20Tomograf%C3%ADas." target="_blank" rel="noopener noreferrer" style="color: #a7f3d0; text-decoration: underline; cursor: pointer;">
+            📲 WhatsApp: 969 029 276
+          </a>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDICIÓN DE REGISTRO -->
+  <div class="modal-backdrop" id="edit-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Editar Registro Radiológico</h3>
+        <button class="icon-btn" onclick="closeModal('edit-modal')">✕</button>
+      </div>
+      <form id="edit-form" onsubmit="handleUpdateOrder(event)">
+        <div class="modal-body">
+          <input type="hidden" id="edit-id" />
+          <div class="form-group">
+            <label class="form-label">Fecha y Hora (Escriba DD/MM/AAAA)</label>
+            <div class="dmy-control" data-target="edit-datetime" data-has-time="true">
+              <input type="text" class="dmy-text-input" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" onfocus="this.select()" oninput="onDmyTextInput('edit-datetime')" onblur="onDmyTextBlur('edit-datetime')" title="Escriba de corrido Día/Mes/Año (ej. 16112026)" />
+              <input type="time" class="dmy-time" aria-label="Hora" onchange="onDmyTimeChange('edit-datetime')" />
+              <button type="button" class="dmy-cal-btn" onclick="openNativePicker('edit-datetime')" title="Abrir calendario">📅</button>
+              <input type="datetime-local" id="edit-datetime" class="dmy-native-hidden" required onchange="syncDmyFromInput('edit-datetime')" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre del Paciente</label>
+            <input type="text" id="edit-patient" class="form-control" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Doctor Solicitante</label>
+              <input type="text" id="edit-doctor" list="doctors-datalist" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Provincia de Procedencia</label>
+              <input type="text" id="edit-province" list="provinces-datalist" class="form-control" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de Placa / Estudio (Puede marcar 1 o más)</label>
+            <div class="plate-selector" id="edit-plate-selector-cards">
+              <div class="plate-option" data-plate="Panorámica" onclick="toggleEditPlateType('Panorámica')">
+                <span class="plate-name">P. Panorámica</span>
+              </div>
+              <div class="plate-option" data-plate="Cefalométrica" onclick="toggleEditPlateType('Cefalométrica')">
+                <span class="plate-name">Cefalométrica</span>
+              </div>
+              <div class="plate-option" data-plate="Periapical" onclick="toggleEditPlateType('Periapical')">
+                <span class="plate-name">Periapical</span>
+              </div>
+              <div class="plate-option" data-plate="Tomografía Cone Beam" onclick="toggleEditPlateType('Tomografía Cone Beam')">
+                <span class="plate-name">Tomografía Cone Beam</span>
+              </div>
+            </div>
+            <input type="hidden" id="edit-plate" value="Panorámica" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Método de Pago</label>
+            <select id="edit-payment" class="form-control" required onchange="handleEditPaymentChange()">
+              <option value="Efectivo">💵 Efectivo</option>
+              <option value="Yape">📱 Yape</option>
+              <option value="Mixto">🔀 Pago Mixto (Efectivo + Yape)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Monto Total Pagado (S/)</label>
+              <input type="number" step="0.50" min="0" id="edit-amount" class="form-control" required oninput="handleEditAmountChange()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Comisión al Doctor (S/)</label>
+              <input type="number" step="0.50" min="0" id="edit-commission" class="form-control" required />
+            </div>
+          </div>
+          <div class="mixed-payment-box" id="edit-mixed-box" style="display: none; margin-bottom: 0.95rem;">
+            <div style="font-size: 0.76rem; font-weight: 700; color: var(--med-blue-800); margin-bottom: 0.45rem;">
+              Desglose de Pago Mixto:
+            </div>
+            <div class="form-row">
+              <div>
+                <label class="form-label" style="font-size: 0.75rem;">💵 Monto Efectivo (S/)</label>
+                <input type="number" step="0.50" min="0" id="edit-mix-efectivo" class="form-control" oninput="handleEditMixSplit('efectivo')" />
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.75rem;">📱 Monto Yape (S/)</label>
+                <input type="number" step="0.50" min="0" id="edit-mix-yape" class="form-control" oninput="handleEditMixSplit('yape')" />
+              </div>
+            </div>
+          </div>
+          <div class="form-group" id="edit-comm-status-group">
+            <label class="form-label">Estado de Comisión al Doctor</label>
+            <select id="edit-comm-paid" class="form-control">
+              <option value="false">⏳ Pendiente (No entregada al doctor)</option>
+              <option value="true">✅ Cancelado (Comisión entregada al doctor)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('edit-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL RÁPIDO PARA EDITAR PRECIOS DE LOS EXÁMENES -->
+  <div class="modal-backdrop" id="tariffs-modal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>⚙️ Editar Precios de Exámenes y Comisiones</h3>
+        <button class="icon-btn" onclick="closeModal('tariffs-modal')">✕</button>
+      </div>
+      <form onsubmit="handleQuickTariffsSave(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">P. Panorámica - Precio (S/)</label>
+              <input type="number" step="0.5" id="modal-price-panoramica" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">P. Panorámica - Comisión (S/)</label>
+              <input type="number" step="0.5" id="modal-comm-panoramica" class="form-control" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Cefalométrica - Precio (S/)</label>
+              <input type="number" step="0.5" id="modal-price-cefalometrica" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cefalométrica - Comisión (S/)</label>
+              <input type="number" step="0.5" id="modal-comm-cefalometrica" class="form-control" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Periapical - Precio (S/)</label>
+              <input type="number" step="0.5" id="modal-price-periapical" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Periapical - Comisión</label>
+              <input type="text" class="form-control" value="Sin comisión (S/ 0.00)" disabled style="background: var(--slate-100); color: var(--slate-500);" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Tomografía Cone Beam - Precio (S/)</label>
+              <input type="number" step="0.5" id="modal-price-conebeam" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tomografía Cone Beam - Comisión (S/)</label>
+              <input type="number" step="0.5" id="modal-comm-conebeam" class="form-control" required />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('tariffs-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Precios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+  <div class="modal-backdrop" id="delete-modal">
+    <div class="modal-box" style="max-width: 430px;">
+      <div class="modal-header">
+        <h3>Confirmar Eliminación</h3>
+        <button class="icon-btn" onclick="closeModal('delete-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-modal-text" style="font-size: 0.92rem; color: var(--slate-700);">
+          ¿Está seguro que desea eliminar este registro radiológico? Esta acción actualizará la caja y las comisiones inmediatamente.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('delete-modal')">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirm-delete-btn">Sí, Eliminar Registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PARA AGREGAR DOCTOR O PROVINCIA RÁPIDAMENTE -->
+  <div class="modal-backdrop" id="quick-add-modal">
+    <div class="modal-box" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 id="quick-add-title">Agregar Nuevo</h3>
+        <button class="icon-btn" onclick="closeModal('quick-add-modal')">✕</button>
+      </div>
+      <form onsubmit="handleQuickAddSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="quick-add-type" />
+          <div class="form-group">
+            <label class="form-label" id="quick-add-label">Nombre</label>
+            <input type="text" id="quick-add-input" class="form-control" required autocomplete="off" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('quick-add-modal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar y Seleccionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE BLOQUEO Y ACTIVACIÓN DE LICENCIA POR PC (By. Carlos Neira) -->
+  <div class="license-overlay" id="license-overlay">
+    <div class="license-card">
+      <div class="license-card-header">
+        <img src="logo.jpg" alt="BioDent" />
+        <div style="flex: 1;">
+          <h3 id="license-modal-title" style="font-size: 1.08rem; font-weight: 800;">Control de Licencia del Sistema</h3>
+          <p id="license-machine-label" style="font-size: 0.76rem; color: #34d399; font-weight: 700;">ID de Equipo: PC-XXXX</p>
+        </div>
+        <button type="button" class="icon-btn" id="license-close-btn" onclick="closeLicenseModal()" style="background: rgba(255,255,255,0.12); color: #fff; border: none;">✕</button>
+      </div>
+
+      <div class="license-card-body">
+        <div id="license-status-alert" style="padding: 0.85rem 1rem; border-radius: 10px; background: var(--slate-100); border: 1px solid var(--slate-200); margin-bottom: 1.1rem; font-size: 0.86rem;">
+          Estado de la licencia...
+        </div>
+
+        <form onsubmit="handleLicenseKeySubmit(event)">
+          <div class="form-group">
+            <label class="form-label" for="inp-license-key">
+              <span>Ingrese Clave de Autorización (By. Carlos Neira)</span>
+            </label>
+            <input type="password" id="inp-license-key" class="form-control" placeholder="Ingrese clave de extensión o liberación..." required autocomplete="off" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Validar Clave</button>
+        </form>
+
+        <!-- PANEL EXCLUSIVO PARA EXTENDER O EDITAR DÍAS DE PRUEBA (SE ABRE CON CLAVE 1) -->
+        <div class="trial-admin-panel" id="trial-admin-panel">
+          <div style="font-size: 0.82rem; font-weight: 800; color: var(--brand-emerald-900); margin-bottom: 0.6rem;">
+            🔓 Modo Administrador de Prueba Activo (By. Carlos Neira)
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <button type="button" class="btn btn-emerald btn-sm" style="flex: 1;" onclick="applyTrialExtensionDays(7, true)">
+              + Expandir 7 Días Más
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="applyTrialExtensionDays(15, true)">
+              + 15 Días
+            </button>
+          </div>
+          <div style="border-top: 1px solid #a7f3d0; padding-top: 0.65rem;">
+            <label class="form-label" style="font-size: 0.76rem; color: var(--brand-emerald-900);">
+              O editar exactamente cuántos días de prueba tendrá desde hoy:
+            </label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="number" min="0" max="3650" id="inp-custom-trial-days" class="form-control" value="7" style="max-width: 120px;" />
+              <button type="button" class="btn btn-primary btn-sm" style="flex: 1;" onclick="applyCustomTrialDaysFromInput()">
+                Guardar Días de Prueba
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.15rem; padding: 0.85rem 1rem; border-radius: 12px; background: #ecfdf5; border: 1.5px solid #10b981; text-align: center;">
+          <div style="font-size: 0.78rem; color: #065f46; font-weight: 700; margin-bottom: 0.35rem;">
+            Soporte Técnico y Activación de Licencia · <strong>By. Carlos Neira</strong>
+          </div>
+          <a id="license-whatsapp-link" href="https://wa.me/51969029276?text=Hola%20Carlos%20Neira%2C%20solicito%20clave%20de%20activaci%C3%B3n%20para%20el%20sistema%20BioDent%20Tomograf%C3%ADas." target="_blank" rel="noopener noreferrer" class="btn btn-emerald btn-sm" style="display: inline-flex; font-size: 0.92rem; padding: 0.45rem 1rem; text-decoration: none;">
+            📲 Contactar por WhatsApp: 969 029 276
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
